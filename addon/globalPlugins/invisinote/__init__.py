@@ -61,10 +61,19 @@ class SettingsDialog(wx.Dialog):
 	def _on_remove_folder(self, event):
 		idx = self._paths_listbox.GetSelection()
 		if idx != wx.NOT_FOUND:
-			self._paths.pop(idx)
-			self._paths_listbox.Delete(idx)
-			if self._paths:
-				self._paths_listbox.SetSelection(min(idx, len(self._paths) - 1))
+			path = self._paths[idx]
+			dlg = wx.MessageDialog(
+				self,
+				_("Remove folder: {}?").format(path),
+				_("Confirm removal"),
+				wx.YES_NO | wx.NO_DEFAULT | wx.ICON_WARNING,
+			)
+			if dlg.ShowModal() == wx.ID_YES:
+				self._paths.pop(idx)
+				self._paths_listbox.Delete(idx)
+				if self._paths:
+					self._paths_listbox.SetSelection(min(idx, len(self._paths) - 1))
+			dlg.Destroy()
 
 	def _on_add_type(self, event):
 		dlg = wx.TextEntryDialog(self, _("Enter file extension (e.g. md):"), _("Add file type"))
@@ -79,10 +88,19 @@ class SettingsDialog(wx.Dialog):
 	def _on_remove_type(self, event):
 		idx = self._types_listbox.GetSelection()
 		if idx != wx.NOT_FOUND:
-			self._file_types.pop(idx)
-			self._types_listbox.Delete(idx)
-			if self._file_types:
-				self._types_listbox.SetSelection(min(idx, len(self._file_types) - 1))
+			ext = self._file_types[idx]
+			dlg = wx.MessageDialog(
+				self,
+				_("Remove file type: {}?").format(ext),
+				_("Confirm removal"),
+				wx.YES_NO | wx.NO_DEFAULT | wx.ICON_WARNING,
+			)
+			if dlg.ShowModal() == wx.ID_YES:
+				self._file_types.pop(idx)
+				self._types_listbox.Delete(idx)
+				if self._file_types:
+					self._types_listbox.SetSelection(min(idx, len(self._file_types) - 1))
+			dlg.Destroy()
 
 	def get_paths(self):
 		return list(self._paths)
@@ -121,6 +139,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			self.paths = [line.strip() for line in f if line.strip()]
 		if not self.paths:
 			self.paths = [defaultPath]
+		for path in self.paths:
+			os.makedirs(path, exist_ok=True)
 		self.currentPathIndex = 0
 		self.notesPath = self.paths[0]
 
@@ -153,6 +173,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			self.currentNoteIndex = 0
 			self._load_current_note_lines()
 			return _("{} notes.").format(len(self.notes))
+		self.currentNoteIndex = 0
+		self.currentNoteLines = []
+		self.currentLineIndex = 0
+		self.currentWordIndex = 0
+		self.currentCharIndex = 0
+		self.selectionAnchor = None
 		return _("No notes")
 
 	def _load_current_note_lines(self):

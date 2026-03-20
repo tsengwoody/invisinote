@@ -104,9 +104,6 @@ msgstr "輸入副檔名（例如 md）："
 msgid "Add file type"
 msgstr "新增檔案類型"
 
-msgid "invisinote"
-msgstr "invisinote"
-
 msgid "Folder not found"
 msgstr "找不到資料夾"
 
